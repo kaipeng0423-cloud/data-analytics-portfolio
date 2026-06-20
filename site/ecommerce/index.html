@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Retailrocket 电商用户行为平台</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">DATA ANALYTICS PORTFOLIO</p>
+      <h1>Retailrocket 电商用户行为平台</h1>
+      <p class="intro">真实公开数据，每日检查源版本，自动完成指标分析、用户分层与 Power BI / Web 可视化。</p>
+    </div>
+    <div class="status">
+      <span class="status-dot"></span>
+      <span>数据已完成一致性校验</span>
+    </div>
+  </header>
+
+  <nav class="project-tabs" aria-label="项目切换">
+    <button class="tab active" data-project="ecommerce">电商用户行为</button>
+  </nav>
+
+  <main>
+    <section class="project-head">
+      <div>
+        <p id="project-kicker" class="eyebrow"></p>
+        <h2 id="project-title"></h2>
+        <p id="project-summary"></p>
+      </div>
+      <div class="filter-group">
+        <label for="window-filter">观察窗口</label>
+        <select id="window-filter"></select>
+        <label for="start-date">开始日期</label>
+        <input id="start-date" type="date">
+        <label for="end-date">结束日期</label>
+        <input id="end-date" type="date">
+      </div>
+    </section>
+
+    <section id="kpi-grid" class="kpi-grid"></section>
+
+    <section class="grid two">
+      <article class="panel wide">
+        <div class="panel-head">
+          <div><span class="panel-label">MOVEMENT</span><h3 id="trend-title"></h3></div>
+          <p id="trend-note"></p>
+        </div>
+        <div id="trend-chart" class="chart"></div>
+      </article>
+      <article class="panel">
+        <div class="panel-head">
+          <div><span class="panel-label">STRUCTURE</span><h3 id="structure-title"></h3></div>
+        </div>
+        <div id="structure-chart" class="chart"></div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <div class="panel-head">
+          <div><span class="panel-label">DRIVER</span><h3 id="driver-title"></h3></div>
+        </div>
+        <div id="driver-chart" class="chart"></div>
+      </article>
+      <article class="panel">
+        <div class="panel-head">
+          <div><span class="panel-label">SEGMENT</span><h3 id="segment-title"></h3></div>
+        </div>
+        <div id="segment-chart" class="chart"></div>
+      </article>
+    </section>
+
+    <section class="grid insight-grid">
+      <article class="panel insight">
+        <span class="panel-label">WHAT I FOUND</span>
+        <h3>核心发现</h3>
+        <ul id="findings"></ul>
+      </article>
+      <article class="panel insight">
+        <span class="panel-label">WHAT I WOULD DO</span>
+        <h3>业务动作</h3>
+        <ol id="actions"></ol>
+      </article>
+      <article class="panel insight method">
+        <span class="panel-label">HOW IT WORKS</span>
+        <h3>分析与工程方法</h3>
+        <div id="method-flow" class="method-flow"></div>
+      </article>
+    </section>
+
+    <section class="panel detail-panel">
+      <div class="panel-head">
+        <div><span class="panel-label">DETAIL</span><h3 id="detail-title"></h3></div>
+        <input id="table-search" type="search" placeholder="搜索明细">
+      </div>
+      <div class="table-wrap"><table id="detail-table"></table></div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Python · SQL · SQLite · HiveSQL · Power BI · DAX · HTML/CSS/JavaScript · Plotly</span>
+    <span>指标均由真实数据查询生成</span>
+  </footer>
+
+  <script src="plotly.min.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
