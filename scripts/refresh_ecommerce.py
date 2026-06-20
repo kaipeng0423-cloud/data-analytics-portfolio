@@ -88,6 +88,59 @@ def temporal_auc(events: pd.DataFrame) -> float:
     return float(roc_auc_score(y_test, model.predict_proba(scaler.transform(x_test))[:, 1]))
 
 
+def adjusted_cart_effect(events: pd.DataFrame) -> dict:
+    """倾向得分加权：平衡首日特征后比较后续交易率。"""
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.preprocessing import StandardScaler
+
+    first = events.groupby("visitorid")["timestamp"].min().rename("first_ts")
+    max_ts = int(events["timestamp"].max())
+    eligible = first[first <= max_ts - 30 * 86_400_000]
+    part = events.loc[events["visitorid"].isin(eligible.index)].join(eligible, on="visitorid")
+    delta = part["timestamp"] - part["first_ts"]
+    baseline = part.loc[delta < 86_400_000].groupby("visitorid").agg(
+        baseline_views=("event", lambda x: int(x.eq("view").sum())),
+        baseline_items=("itemid", "nunique"),
+        baseline_weekend=("is_weekend", "mean"),
+    )
+    treatment = part.loc[
+        delta.ge(86_400_000) & delta.lt(7 * 86_400_000)
+    ].assign(treated=lambda x: x["event"].eq("addtocart")).groupby("visitorid")["treated"].max()
+    outcome = part.loc[
+        delta.ge(7 * 86_400_000) & delta.lt(30 * 86_400_000)
+    ].assign(purchased=lambda x: x["event"].eq("transaction")).groupby("visitorid")["purchased"].max()
+    frame = baseline.join(treatment).join(outcome).fillna(False)
+    frame = frame.loc[frame["treated"] | (frame.index % 20 == 0)].copy()
+    frame["log_views"] = np.log1p(frame["baseline_views"])
+    frame["log_items"] = np.log1p(frame["baseline_items"])
+    columns = ["log_views", "log_items", "baseline_weekend"]
+    x = StandardScaler().fit_transform(frame[columns])
+    t = frame["treated"].astype(int).to_numpy()
+    y = frame["purchased"].astype(int).to_numpy()
+    model = LogisticRegression(max_iter=1000, class_weight="balanced", random_state=42)
+    model.fit(x, t)
+    p = np.clip(model.predict_proba(x)[:, 1], .05, .95)
+    wt, wc = t / p, (1 - t) / (1 - p)
+    mu1 = float(np.sum(wt * y) / np.sum(wt))
+    mu0 = float(np.sum(wc * y) / np.sum(wc))
+    effect = mu1 - mu0
+    variance = (
+        np.sum((wt**2) * ((y - mu1) ** 2)) / (np.sum(wt) ** 2)
+        + np.sum((wc**2) * ((y - mu0) ** 2)) / (np.sum(wc) ** 2)
+    )
+    se = float(np.sqrt(variance))
+    return {
+        "sampleSize": int(len(frame)),
+        "treated": int(t.sum()),
+        "adjustedTreatedRate": mu1,
+        "adjustedControlRate": mu0,
+        "adjustedEffect": effect,
+        "ciLow": effect - 1.96 * se,
+        "ciHigh": effect + 1.96 * se,
+        "assumption": "在控制首日浏览深度、商品广度和周末行为后，不存在同时影响后续加购和交易的未观测混杂。",
+    }
+
+
 def rebuild(zip_path: Path) -> None:
     """从新版本源文件重建看板所需聚合。"""
     extract = zip_path.parent / "extract"
@@ -156,6 +209,7 @@ def rebuild(zip_path: Path) -> None:
     buyer_events = visitor.loc[visitor["transaction_events"].gt(0), "transaction_events"]
     repeat_rate = float(buyer_events.ge(2).mean())
     auc = temporal_auc(events)
+    causal = adjusted_cart_effect(events)
     series = daily.set_index(pd.to_datetime(daily["event_date"]))["visitors"]
     test = series.iloc[-14:]
     forecast = series.shift(7).loc[test.index]
@@ -178,6 +232,7 @@ def rebuild(zip_path: Path) -> None:
                 "auc": auc,
                 "forecastMape": forecast_mape,
             },
+            "causal": causal,
         }
     }
     SITE_DATA.write_text(
