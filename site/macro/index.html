@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>宏观经济与金融风险监控平台</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">MACRO & MARKET RISK MONITOR</p>
+      <h1>宏观经济与金融风险监控平台</h1>
+      <p>官方数据每日增量抓取，自动完成入库、指标计算、风险识别与 Web 可视化。</p>
+    </div>
+    <button id="refresh-button">立即刷新数据</button>
+  </header>
+
+  <main>
+    <section class="toolbar">
+      <div>
+        <span id="refresh-status" class="badge"></span>
+        <span id="latest-date"></span>
+      </div>
+      <label>快捷窗口
+        <select id="window-filter">
+          <option value="1">最近 1 年</option>
+          <option value="3">最近 3 年</option>
+          <option value="5" selected>最近 5 年</option>
+          <option value="10">最近 10 年</option>
+        </select>
+      </label>
+      <label>开始日期<input id="start-date" type="date"></label>
+      <label>结束日期<input id="end-date" type="date"></label>
+    </section>
+
+    <section id="kpis" class="kpis"></section>
+
+    <section class="grid main-grid">
+      <article class="panel hero">
+        <div class="panel-head"><div><span>RISK</span><h2>综合风险指数</h2></div><p>滚动历史百分位加权，0—100</p></div>
+        <div id="risk-chart" class="chart"></div>
+      </article>
+      <article class="panel">
+        <div class="panel-head"><div><span>CURVE</span><h2>国债收益率与期限利差</h2></div></div>
+        <div id="yield-chart" class="chart"></div>
+      </article>
+    </section>
+
+    <section class="grid two">
+      <article class="panel">
+        <div class="panel-head"><div><span>STRESS</span><h2>市场压力指标</h2></div></div>
+        <div id="stress-chart" class="chart"></div>
+      </article>
+      <article class="panel">
+        <div class="panel-head"><div><span>MACRO</span><h2>通胀与就业</h2></div></div>
+        <div id="macro-chart" class="chart"></div>
+      </article>
+    </section>
+
+    <section class="grid insight-grid">
+      <article class="panel"><span class="section-label">INTERPRETATION</span><h2>当前信号解读</h2><ul id="insights"></ul></article>
+      <article class="panel"><span class="section-label">METHODOLOGY</span><h2>指标计算方法</h2><p id="method"></p></article>
+      <article class="panel"><span class="section-label">PIPELINE</span><h2>自动化数据链路</h2>
+        <div class="flow"><div>FRED 官方源</div><div>Python 增量抓取</div><div>SQLite</div><div>风险计算</div><div>Web 看板</div></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><span>FRESHNESS</span><h2>数据源更新状态</h2></div><p>不同序列按官方发布频率更新</p></div>
+      <div class="table-wrap"><table id="freshness-table"></table></div>
+    </section>
+  </main>
+
+  <footer>Python · Pandas · Requests · SQLite · SQL · Flask · HTML/CSS/JavaScript · Plotly · Power BI · HiveSQL</footer>
+  <script src="plotly.min.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
