@@ -89,8 +89,8 @@ def main() -> None:
         )
         .reset_index()
     )
-    daily["fed_change"] = daily["fed_funds_rate"].diff()
-    hike_events = daily.loc[daily["fed_change"] >= .20].dropna(subset=["forward_return_20d"])
+    daily["risk_change_1d"] = daily["risk_score"].diff()
+    hike_events = daily.loc[daily["risk_change_1d"] >= 15].dropna(subset=["forward_return_20d"])
     freshness = []
     for sid,(name,freq,unit) in SERIES.items():
         part = wide[sid].dropna()
@@ -109,7 +109,7 @@ def main() -> None:
                 "events":int(len(hike_events)),
                 "avgForwardReturn20d":round(float(hike_events["forward_return_20d"].mean()),4),
                 "negativeProbability":round(float((hike_events["forward_return_20d"]<0).mean()),4),
-                "note":"事件窗口描述利率明显上调后的市场表现；未控制同期宏观冲击，不能解释为纯政策因果效应。"
+                "note":"事件窗口描述综合风险指数单日跃升至少15点后的市场表现；这属于事件研究和条件关联，不能证明风险指数变化导致后续收益。"
             },
             "rules":[
                 "风险指数不低于75且信用利差同步上升：降低风险暴露、提高监控频率。",
