@@ -89,7 +89,7 @@ def temporal_auc(events: pd.DataFrame) -> float:
 
 
 def adjusted_cart_effect(events: pd.DataFrame) -> dict:
-    """倾向得分加权：平衡首日特征后比较后续交易率。"""
+    """倾向得分加权：估计已加购访客的后续交易率差异。"""
     from sklearn.linear_model import LogisticRegression
     from sklearn.preprocessing import StandardScaler
 
@@ -120,15 +120,29 @@ def adjusted_cart_effect(events: pd.DataFrame) -> dict:
     model = LogisticRegression(max_iter=1000, class_weight="balanced", random_state=42)
     model.fit(x, t)
     p = np.clip(model.predict_proba(x)[:, 1], .05, .95)
-    wt, wc = t / p, (1 - t) / (1 - p)
-    mu1 = float(np.sum(wt * y) / np.sum(wt))
+    wt, wc = t.astype(float), (1 - t) * p / (1 - p)
+    mu1 = float(y[t == 1].mean())
     mu0 = float(np.sum(wc * y) / np.sum(wc))
     effect = mu1 - mu0
     variance = (
-        np.sum((wt**2) * ((y - mu1) ** 2)) / (np.sum(wt) ** 2)
+        np.var(y[t == 1], ddof=1) / t.sum()
         + np.sum((wc**2) * ((y - mu0) ** 2)) / (np.sum(wc) ** 2)
     )
     se = float(np.sqrt(variance))
+
+    def weighted_smd(values: np.ndarray, treated_weights: np.ndarray, control_weights: np.ndarray) -> float:
+        treated, control = t == 1, t == 0
+        mt = np.average(values[treated], weights=treated_weights[treated])
+        mc = np.average(values[control], weights=control_weights[control])
+        vt = np.average((values[treated] - mt) ** 2, weights=treated_weights[treated])
+        vc = np.average((values[control] - mc) ** 2, weights=control_weights[control])
+        scale = np.sqrt((vt + vc) / 2)
+        return float(abs(mt - mc) / scale) if scale else 0.0
+
+    raw = frame[columns].to_numpy(dtype=float)
+    unit = np.ones(len(frame))
+    before = [weighted_smd(raw[:, index], unit, unit) for index in range(raw.shape[1])]
+    after = [weighted_smd(raw[:, index], wt, wc) for index in range(raw.shape[1])]
     return {
         "sampleSize": int(len(frame)),
         "treated": int(t.sum()),
@@ -137,7 +151,10 @@ def adjusted_cart_effect(events: pd.DataFrame) -> dict:
         "adjustedEffect": effect,
         "ciLow": effect - 1.96 * se,
         "ciHigh": effect + 1.96 * se,
-        "assumption": "在控制首日浏览深度、商品广度和周末行为后，不存在同时影响后续加购和交易的未观测混杂。",
+        "maxSmdBefore": max(before),
+        "maxSmdAfter": max(after),
+        "estimand": "ATT（对已加购访客的平均处理效应）",
+        "assumption": "在控制首日浏览深度、商品广度和周末行为后，不再存在同时影响加购与后续交易的未观测混杂。",
     }
 
 
