@@ -116,6 +116,19 @@ function renderEcommerce(windowSize = "all") {
     "对高流量低转化品类检查商品详情、库存与价格竞争力。"
   ]);
   renderMethod(["真实 CSV", "Python 清洗", "SQLite / HiveSQL", "指标与模型", "Power BI / Web"]);
+  const c = d.causal;
+  document.querySelector("#causal-kpis").innerHTML = [
+    ["加购组调整后交易率", formatPercent(c.adjustedTreatedRate)],
+    ["未加购组调整后交易率", formatPercent(c.adjustedControlRate)],
+    ["调整后差异", `${c.adjustedEffect >= 0 ? "+" : ""}${formatPercent(c.adjustedEffect)}`]
+  ].map(x => `<div><strong>${x[1]}</strong><span>${x[0]}</span></div>`).join("");
+  document.querySelector("#causal-summary").textContent = `倾向得分加权样本 ${formatNumber(c.sampleSize)} 人，其中加购访客 ${formatNumber(c.treated)} 人；95% 置信区间为 ${formatPercent(c.ciLow)} 至 ${formatPercent(c.ciHigh)}。`;
+  document.querySelector("#causal-assumption").textContent = `识别假设：${c.assumption} 因此结果是满足假设时的因果估计，最终策略仍需 A/B 测试。`;
+  document.querySelector("#decision-table").innerHTML = `<thead><tr><th>观察信号</th><th>建议动作</th><th>验证指标</th></tr></thead><tbody>
+    <tr><td>加购且预测概率高</td><td>进入优先召回组，并随机保留未触达对照</td><td>增量交易率、触达成本</td></tr>
+    <tr><td>深度浏览但未加购</td><td>优化商品信息或推荐，不直接大额发券</td><td>加购率、详情页退出率</td></tr>
+    <tr><td>流量断点</td><td>先排查渠道、埋点、库存，再决定重训</td><td>数据完整率、渠道流量</td></tr>
+  </tbody>`;
   document.querySelector("#detail-title").textContent = "品类表现明细";
   renderTable(d.category, [
     { key: "category_id", label: "品类 ID" },
@@ -215,6 +228,7 @@ function setDateBounds(project) {
 
 function render(project, windowSize = "all") {
   currentProject = project;
+  document.querySelector(".decision-grid").style.display = project === "ecommerce" ? "grid" : "none";
   project === "ecommerce" ? renderEcommerce(windowSize) : renderRetail(windowSize);
 }
 
