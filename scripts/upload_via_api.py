@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import subprocess
 from pathlib import Path
 from urllib.parse import quote
@@ -30,6 +31,12 @@ def files() -> list[Path]:
     return sorted(result, key=lambda path: (".github" in path.parts, path.as_posix()))
 
 
+def git_blob_sha(content: bytes) -> str:
+    """计算与 GitHub Contents API 返回值一致的 Git blob SHA。"""
+    header = f"blob {len(content)}\0".encode("ascii")
+    return hashlib.sha1(header + content, usedforsecurity=False).hexdigest()
+
+
 def main() -> None:
     """逐文件创建或更新 GitHub 内容。"""
     headers = {
@@ -39,12 +46,16 @@ def main() -> None:
     }
     for path in files():
         relative = path.relative_to(ROOT).as_posix()
+        content = path.read_bytes()
         endpoint = f"https://api.github.com/repos/{REPOSITORY}/contents/{quote(relative, safe='/')}"
         existing = requests.get(endpoint, headers=headers, timeout=60)
         sha = existing.json().get("sha") if existing.status_code == 200 else None
+        if sha == git_blob_sha(content):
+            print(f"Unchanged {relative}")
+            continue
         body = {
             "message": f"Publish {relative}",
-            "content": base64.b64encode(path.read_bytes()).decode("ascii"),
+            "content": base64.b64encode(content).decode("ascii"),
             "branch": "main",
         }
         if sha:
