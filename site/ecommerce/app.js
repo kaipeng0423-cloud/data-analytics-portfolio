@@ -122,7 +122,8 @@ function renderEcommerce(windowSize = "all") {
     ["未加购组调整后交易率", formatPercent(c.adjustedControlRate)],
     ["调整后差异", `${c.adjustedEffect >= 0 ? "+" : ""}${formatPercent(c.adjustedEffect)}`]
   ].map(x => `<div><strong>${x[1]}</strong><span>${x[0]}</span></div>`).join("");
-  document.querySelector("#causal-summary").textContent = `倾向得分加权样本 ${formatNumber(c.sampleSize)} 人，其中加购访客 ${formatNumber(c.treated)} 人；95% 置信区间为 ${formatPercent(c.ciLow)} 至 ${formatPercent(c.ciHigh)}。`;
+  document.querySelector("#causal-summary").textContent = `${c.estimand}：倾向得分加权样本 ${formatNumber(c.sampleSize)} 人，其中加购访客 ${formatNumber(c.treated)} 人；95% 置信区间为 ${formatPercent(c.ciLow)} 至 ${formatPercent(c.ciHigh)}。`;
+  document.querySelector("#balance-summary").textContent = `平衡诊断：协变量最大标准化差异由 ${c.maxSmdBefore.toFixed(2)} 降至 ${c.maxSmdAfter.toFixed(2)}；越接近 0，处理组与对照组越可比。`;
   document.querySelector("#causal-assumption").textContent = `识别假设：${c.assumption} 因此结果是满足假设时的因果估计，最终策略仍需 A/B 测试。`;
   document.querySelector("#decision-table").innerHTML = `<thead><tr><th>观察信号</th><th>建议动作</th><th>验证指标</th></tr></thead><tbody>
     <tr><td>加购且预测概率高</td><td>进入优先召回组，并随机保留未触达对照</td><td>增量交易率、触达成本</td></tr>
