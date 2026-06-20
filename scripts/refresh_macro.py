@@ -78,6 +78,19 @@ def main() -> None:
     monthly = monthly.reset_index().rename(columns={"date":"observation_date","UNRATE":"unemployment_rate","CPIAUCSL":"cpi_index"})
     monthly["observation_date"] = monthly["observation_date"].dt.strftime("%Y-%m-%d")
     latest, previous = daily.iloc[-1], daily.iloc[-21]
+    daily["forward_return_20d"] = daily["sp500"].shift(-20) / daily["sp500"] - 1
+    regime_analysis = (
+        daily.dropna(subset=["forward_return_20d"])
+        .groupby("risk_regime", observed=True)
+        .agg(
+            observations=("forward_return_20d", "size"),
+            avg_forward_return=("forward_return_20d", "mean"),
+            negative_probability=("forward_return_20d", lambda x: float((x < 0).mean())),
+        )
+        .reset_index()
+    )
+    daily["fed_change"] = daily["fed_funds_rate"].diff()
+    hike_events = daily.loc[daily["fed_change"] >= .20].dropna(subset=["forward_return_20d"])
     freshness = []
     for sid,(name,freq,unit) in SERIES.items():
         part = wide[sid].dropna()
@@ -90,6 +103,20 @@ def main() -> None:
         "daily":clean_records(daily.tail(2600)),"monthly":clean_records(monthly.tail(240)),"freshness":freshness,
         "refresh":{"finishedAt":datetime.now(timezone.utc).replace(microsecond=0).isoformat(),"status":"success","rowsUpserted":sum(x["observations"] for x in freshness),"seriesSucceeded":9,"seriesFailed":0},
         "method":{"riskScore":"VIX 28% + 高收益债利差 25% + 20日波动率 18% + 20日负收益 16% + 收益率曲线倒挂 13%；各项使用滚动历史百分位归一化。","source":"Federal Reserve Economic Data (FRED)"}
+        ,"decisionAnalysis":{
+            "regimes":clean_records(regime_analysis),
+            "rateHikeEventStudy":{
+                "events":int(len(hike_events)),
+                "avgForwardReturn20d":round(float(hike_events["forward_return_20d"].mean()),4),
+                "negativeProbability":round(float((hike_events["forward_return_20d"]<0).mean()),4),
+                "note":"事件窗口描述利率明显上调后的市场表现；未控制同期宏观冲击，不能解释为纯政策因果效应。"
+            },
+            "rules":[
+                "风险指数不低于75且信用利差同步上升：降低风险暴露、提高监控频率。",
+                "风险指数55—75：保留仓位但设置更严格的回撤和流动性预警。",
+                "风险指数低于55且期限利差改善：维持常规监控，不依据单一信号追涨。"
+            ]
+        }
     }
     SITE.mkdir(parents=True,exist_ok=True)
     (SITE/"data.js").write_text("window.MACRO_DATA = "+json.dumps(payload,ensure_ascii=False,separators=(",",":"))+";",encoding="utf-8")
