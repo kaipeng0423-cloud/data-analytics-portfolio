@@ -170,9 +170,14 @@ footer {
 }
 
 @media (max-width: 560px) {
+  html, body { overflow-x: hidden; }
   main { width: 94vw; }
   .topbar, .project-tabs { padding-left: 3vw; padding-right: 3vw; }
   .kpi-grid { grid-template-columns: 1fr; }
+  .grid.two, .insight-grid, .decision-grid { display: block !important; }
+  .panel { width: 100%; overflow: hidden; margin-bottom: 12px; }
+  .js-plotly-plot, .plot-container, .svg-container { width: 100% !important; max-width: 100% !important; }
+  h1 { font-size: 27px; overflow-wrap: anywhere; }
   .chart { height: 310px; }
 }
 
