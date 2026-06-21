@@ -247,6 +247,8 @@ function setDateBounds(project) {
     const input = document.querySelector(`#${id}`);
     input.min = start;
     input.max = end;
+    // 显示日期范围提示（仅设置一次）
+    if (input.placeholder === "") input.placeholder = project === "ecommerce" ? `${start} — ${end}` : `${start} — ${end}`;
     input.value = "";
   }
   customStart = null;
