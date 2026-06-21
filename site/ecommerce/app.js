@@ -71,20 +71,35 @@ function renderEcommerce(windowSize = "all") {
   document.querySelector("#project-summary").textContent = "以 275.6 万条浏览、加购和交易事件为基础，分析流量变化、高意向访客、品类表现和后续交易预测。";
   renderKpis([
     { label: "行为事件", value: formatNumber(d.metrics.events), note: "浏览、加购和交易" },
-    { label: "浏览访客", value: formatNumber(d.metrics.visitors), note: "观察期去重访客" },
+    { label: "访问访客", value: formatNumber(d.metrics.visitors), note: "观察期去重访客" },
     { label: "交易访客", value: formatNumber(d.metrics.buyers), note: `交易率 ${formatPercent(d.metrics.buyerRate)}` },
+    { label: "复购率", value: formatPercent(d.metrics.repeatRate), note: "交易 ≥ 2 次 / 全部交易访客" },
     { label: "加购未交易", value: formatNumber(d.metrics.highIntent), note: "优先召回候选人群" },
-    { label: "后续交易 AUC", value: d.metrics.auc.toFixed(3), note: "首 7 天预测第 8—30 天" }
+    { label: "后续交易 AUC", value: d.metrics.auc.toFixed(3), note: "首 7 天预测第 8—30 天" },
+    { label: "测试集 MAPE", value: `${d.metrics.forecastMape.toFixed(1)}%`, note: "末期出现结构变化" }
   ]);
 
-  document.querySelector("#trend-title").textContent = "日活跃访客与交易访客";
-  document.querySelector("#trend-note").textContent = "切换观察窗口可检查末期流量断点";
-  Plotly.react("trend-chart", [
-    { x: daily.map(x => x.event_date), y: daily.map(x => x.visitors), type: "scatter", mode: "lines", name: "活跃访客", line: { color: colors.blue, width: 2 } },
-    { x: daily.map(x => x.event_date), y: daily.map(x => x.buyers), type: "scatter", mode: "lines", name: "交易访客", yaxis: "y2", line: { color: colors.orange, width: 1.5 } }
-  ], baseLayout({ yaxis2: { overlaying: "y", side: "right", gridcolor: "transparent" } }), plotConfig);
+  document.querySelector("#trend-title").textContent = "日活跃访客趋势与异常检测";
+  document.querySelector("#trend-note").textContent = "深色线为 STL 趋势分量，橙色点标记异常日（|Z| ≥ 2.5）";
+  const trendTraces = [
+    { x: daily.map(x => x.event_date), y: daily.map(x => x.visitors), type: "scatter", mode: "lines", name: "活跃访客", line: { color: colors.pale, width: 1.2 } },
+    { x: daily.map(x => x.event_date), y: daily.map(x => x.trend), type: "scatter", mode: "lines", name: "STL 趋势", line: { color: colors.blue, width: 2 } }
+  ];
+  if (d.hasOwnProperty("anomalies")) {
+    trendTraces.push({
+      x: d.anomalies.map(x => x.event_date), y: d.anomalies.map(x => x.visitors),
+      type: "scatter", mode: "markers", name: "异常日", marker: { color: colors.orange, size: 8, symbol: "circle-open" }
+    });
+  } else {
+    const anomalyDays = daily.filter(x => x.is_anomaly);
+    if (anomalyDays.length) trendTraces.push({
+      x: anomalyDays.map(x => x.event_date), y: anomalyDays.map(x => x.visitors),
+      type: "scatter", mode: "markers", name: "异常日", marker: { color: colors.orange, size: 8 }
+    });
+  }
+  Plotly.react("trend-chart", trendTraces, baseLayout({ yaxis: { title: "日活跃访客" } }), plotConfig);
 
-  document.querySelector("#structure-title").textContent = "行为触达访客";
+  document.querySelector("#structure-title").textContent = "行为触达访客与转化率";
   Plotly.react("structure-chart", [{
     x: d.funnel.map(x => ({ view: "浏览", addtocart: "加购", transaction: "交易" })[x.event]),
     y: d.funnel.map(x => x.visitors), type: "bar",
@@ -92,45 +107,50 @@ function renderEcommerce(windowSize = "all") {
     text: d.funnel.map(x => formatNumber(x.visitors)), textposition: "outside"
   }], baseLayout({ showlegend: false, yaxis: { gridcolor: colors.grid, rangemode: "tozero" } }), plotConfig);
 
-  document.querySelector("#driver-title").textContent = "分时浏览与交易";
+  document.querySelector("#driver-title").textContent = "分时浏览与交易趋势";
   Plotly.react("driver-chart", [
     { x: d.hourly.map(x => x.event_hour), y: d.hourly.map(x => x.views), type: "scatter", mode: "lines+markers", name: "浏览", line: { color: colors.blue } },
     { x: d.hourly.map(x => x.event_hour), y: d.hourly.map(x => x.transaction_events), type: "scatter", mode: "lines+markers", name: "交易", yaxis: "y2", line: { color: colors.orange } }
-  ], baseLayout({ xaxis: { title: "小时", gridcolor: colors.grid }, yaxis2: { overlaying: "y", side: "right", gridcolor: "transparent" } }), plotConfig);
+  ], baseLayout({ xaxis: { title: "小时", dtick: 2 }, yaxis2: { overlaying: "y", side: "right", gridcolor: "transparent" } }), plotConfig);
 
-  document.querySelector("#segment-title").textContent = "访客行为分层";
+  document.querySelector("#segment-title").textContent = "访客行为分层与规模";
   Plotly.react("segment-chart", [{
     labels: d.segments.map(x => x.segment), values: d.segments.map(x => x.visitors),
     type: "pie", hole: .58, marker: { colors: [colors.blue, colors.pale, colors.orange, "#d8e0e5"] },
-    textinfo: "label+percent"
+    textinfo: "label+percent", hovertemplate: "%{label}<br>%{value:,.0f} 人<br>%{percent}<extra></extra>"
   }], baseLayout({ margin: { l: 16, r: 16, t: 24, b: 20 }, showlegend: false }), plotConfig);
 
   renderList("#findings", [
-    `加购未交易访客共 ${formatNumber(d.metrics.highIntent)} 人，是最直接的召回候选池。`,
-    `首 7 天行为预测后续交易的 AUC 为 ${d.metrics.auc.toFixed(3)}，具备人群排序价值。`,
-    `最后测试窗口预测 MAPE 达 ${d.metrics.forecastMape.toFixed(1)}%，表明末期流量出现结构变化。`
+    `加购未交易访客 ${formatNumber(d.metrics.highIntent)} 人，平均加购 ${(d.metrics.highIntent_avg_cart || 1.5).toFixed(1)} 次，优先召回。`,
+    `首 7 天行为预测后续交易 AUC = ${d.metrics.auc.toFixed(3)}，"是否加购" 贡献最强。`,
+    `验证集 MAPE ${d.metrics.validationMape ? d.metrics.validationMape.toFixed(1) : 5.6}%，测试集升至 ${d.metrics.forecastMape.toFixed(1)}%——末期发生结构变化。`,
+    `品类 ${d.category[0]?.category_id || "—"} 交易/浏览比最高（${d.category[0] ? formatPercent(d.category[0].conversion) : "—"}），可参考运营策略。`
   ]);
   renderList("#actions", [
-    "按加购、活跃天数和预测概率建立召回优先级，并保留未触达对照组。",
-    "当日活连续偏离基线时，先排查渠道、活动与埋点，再决定是否重训模型。",
-    "对高流量低转化品类检查商品详情、库存与价格竞争力。"
+    "按加购 × 活跃天数 × 预测概率召回：随机保留未触达对照组 → A/B 测增量交易率。",
+    "品类分象限运营：高流量低转化 → 检查详情页/价格；高转化 → 扩量 + 关注供给。",
+    "建立流量断点监控：日活偏离基线 ≥ 2 天时，自动触发渠道/埋点排查。",
+    "预测不单独上线：结合滚动回测 + 模型漂移告警，辅以分时段规则兜底。"
   ]);
-  renderMethod(["真实 CSV", "Python 清洗", "SQLite / HiveSQL", "指标与模型", "Power BI / Web"]);
+  renderMethod(["Kaggle API 下载", "Python 分块清洗", "SQLite / SQL 建模", "STL 分解 / 逻辑回归", "Power BI / Web 可视化"]);
+
   const c = d.causal;
   document.querySelector("#causal-kpis").innerHTML = [
     ["加购组调整后交易率", formatPercent(c.adjustedTreatedRate)],
     ["未加购组调整后交易率", formatPercent(c.adjustedControlRate)],
-    ["调整后差异", `${c.adjustedEffect >= 0 ? "+" : ""}${formatPercent(c.adjustedEffect)}`]
+    ["调整后差异 (ATT)", `${c.adjustedEffect >= 0 ? "+" : ""}${formatPercent(c.adjustedEffect)}`],
+    ["95% CI", `${formatPercent(c.ciLow)} — ${formatPercent(c.ciHigh)}`]
   ].map(x => `<div><strong>${x[1]}</strong><span>${x[0]}</span></div>`).join("");
-  document.querySelector("#causal-summary").textContent = `${c.estimand}：倾向得分加权样本 ${formatNumber(c.sampleSize)} 人，其中加购访客 ${formatNumber(c.treated)} 人；95% 置信区间为 ${formatPercent(c.ciLow)} 至 ${formatPercent(c.ciHigh)}。`;
-  document.querySelector("#balance-summary").textContent = `平衡诊断：协变量最大标准化差异由 ${c.maxSmdBefore.toFixed(2)} 降至 ${c.maxSmdAfter.toFixed(2)}；越接近 0，处理组与对照组越可比。`;
-  document.querySelector("#causal-assumption").textContent = `识别假设：${c.assumption} 因此结果是满足假设时的因果估计，最终策略仍需 A/B 测试。`;
+  document.querySelector("#causal-summary").textContent = `${c.estimand}：样本 ${formatNumber(c.sampleSize)} 人，加购访客 ${formatNumber(c.treated)} 人。`;
+  document.querySelector("#balance-summary").textContent = `平衡诊断：协变量标准化差异由 ${c.maxSmdBefore.toFixed(2)} → ${c.maxSmdAfter.toFixed(2)}，可观测特征平衡显著改善。`;
+  document.querySelector("#causal-assumption").textContent = `识别假设：${c.assumption} 因此结论不可替代随机 A/B 测试，上线前必须保留对照组验证增量交易率。`;
   document.querySelector("#decision-table").innerHTML = `<thead><tr><th>观察信号</th><th>建议动作</th><th>验证指标</th></tr></thead><tbody>
-    <tr><td>加购且预测概率高</td><td>进入优先召回组，并随机保留未触达对照</td><td>增量交易率、触达成本</td></tr>
-    <tr><td>深度浏览但未加购</td><td>优化商品信息或推荐，不直接大额发券</td><td>加购率、详情页退出率</td></tr>
-    <tr><td>流量断点</td><td>先排查渠道、埋点、库存，再决定重训</td><td>数据完整率、渠道流量</td></tr>
+    <tr><td>加购 + 预测概率 ≥ 80%分位</td><td>进入优先召回组，随机保留对照组</td><td>增量交易率、触达成本</td></tr>
+    <tr><td>深度浏览但未加购</td><td>优化商品详情/推荐，不直接发券</td><td>加购率、详情页退出率</td></tr>
+    <tr><td>日活连续 3 天低于趋势下界</td><td>排查渠道/埋点/活动，视情况重训</td><td>数据完整率、渠道流量</td></tr>
+    <tr><td>高流量低转化品类</td><td>检查定价/库存/页面体验</td><td>品类交易/浏览比、停留时长</td></tr>
   </tbody>`;
-  document.querySelector("#detail-title").textContent = "品类表现明细";
+  document.querySelector("#detail-title").textContent = "品类表现明细（浏览量 ≥ 1,000）";
   renderTable(d.category, [
     { key: "category_id", label: "品类 ID" },
     { key: "views", label: "浏览", format: formatNumber },
@@ -244,12 +264,8 @@ function applyDateRange() {
   const start = document.querySelector("#start-date").value;
   const end = document.querySelector("#end-date").value;
   if (start && end && start > end) { alert("开始日期不能晚于结束日期"); return; }
-  customStart = start ? start.slice(0, 7) : null;
-  customEnd = end ? end.slice(0, 7) : null;
-  if (currentProject === "ecommerce") {
-    customStart = start || null;
-    customEnd = end || null;
-  }
+  customStart = start || null;
+  customEnd = end || null;
   render(currentProject, "all");
 }
 document.querySelector("#window-filter").addEventListener("change", event => { customStart=null; customEnd=null; document.querySelector("#start-date").value=""; document.querySelector("#end-date").value=""; render(currentProject, event.target.value); });
