@@ -98,14 +98,14 @@ function renderEcommerce(windowSize = "all") {
     { label: "测试集 MASE", value: (d.metrics.forecastMase || (d.metrics.forecastMape / 51)).toFixed(1), note: `MAPE ${d.metrics.forecastMape.toFixed(1)}%（末期结构变化）` },
   ]);
 
-  document.querySelector("#trend-title").textContent = "日活跃访客与交易访客";
+  document.querySelector("#trend-title").textContent = "日活跃访客与交易访客（随窗口变化）";
   document.querySelector("#trend-note").textContent = "切换观察窗口可检查末期流量断点；过滤后自动重算访客交易率";
   Plotly.react("trend-chart", [
     { x: daily.map(x => x.event_date), y: daily.map(x => x.visitors), type: "scatter", mode: "lines", name: "活跃访客", line: { color: colors.blue, width: 2 } },
     { x: daily.map(x => x.event_date), y: daily.map(x => x.buyers), type: "scatter", mode: "lines", name: "交易访客", yaxis: "y2", line: { color: colors.orange, width: 1.5 } }
   ], baseLayout({ yaxis: { title: "活跃访客" }, yaxis2: { overlaying: "y", side: "right", title: "交易访客", gridcolor: "transparent" } }), plotConfig);
 
-  document.querySelector("#structure-title").textContent = "行为触达访客与转化率";
+  document.querySelector("#structure-title").textContent = "行为触达访客与转化率（全量统计）";
   Plotly.react("structure-chart", [{
     x: d.funnel.map(x => ({ view: "浏览", addtocart: "加购", transaction: "交易" })[x.event]),
     y: d.funnel.map(x => x.visitors), type: "bar",
@@ -113,13 +113,13 @@ function renderEcommerce(windowSize = "all") {
     text: d.funnel.map(x => formatNumber(x.visitors)), textposition: "outside"
   }], baseLayout({ showlegend: false, yaxis: { gridcolor: colors.grid, rangemode: "tozero" } }), plotConfig);
 
-  document.querySelector("#driver-title").textContent = "分时浏览与交易趋势";
+  document.querySelector("#driver-title").textContent = "分时浏览与交易趋势（全量统计）";
   Plotly.react("driver-chart", [
     { x: d.hourly.map(x => x.event_hour), y: d.hourly.map(x => x.views), type: "scatter", mode: "lines+markers", name: "浏览", line: { color: colors.blue } },
     { x: d.hourly.map(x => x.event_hour), y: d.hourly.map(x => x.transaction_events), type: "scatter", mode: "lines+markers", name: "交易", yaxis: "y2", line: { color: colors.orange } }
   ], baseLayout({ xaxis: { title: "小时", dtick: 2 }, yaxis2: { overlaying: "y", side: "right", gridcolor: "transparent" } }), plotConfig);
 
-  document.querySelector("#segment-title").textContent = "访客行为分层与规模";
+  document.querySelector("#segment-title").textContent = "访客行为分层与规模（全量统计）";
   Plotly.react("segment-chart", [{
     labels: d.segments.map(x => x.segment), values: d.segments.map(x => x.visitors),
     type: "pie", hole: .58, marker: { colors: [colors.blue, colors.pale, colors.orange, "#d8e0e5"] },
