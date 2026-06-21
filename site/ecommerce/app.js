@@ -157,12 +157,15 @@ function renderEcommerce(windowSize = "all") {
     { x: d.hourly.map(x => `${x.event_hour}:00`), y: d.hourly.map(x => x.transaction_events), type: "scatter", mode: "lines+markers", name: "交易", yaxis: "y2", line: { color: colors.orange, width: 1.8 }, marker: { size: 4 } }
   ], baseLayout({ xaxis: { title: "小时", dtick: 3 }, yaxis2: { overlaying: "y", side: "right", gridcolor: "transparent" } }), plotConfig);
 
+  // 柱状图：避免饼图因极端分布导致标签截断
+  const segSorted = [...d.segments].sort((a, b) => a.visitors - b.visitors);
   Plotly.react("segment-chart", [{
-    labels: d.segments.map(x => x.segment), values: d.segments.map(x => x.visitors),
-    type: "pie", hole: .55, marker: { colors: [colors.blue, colors.blue2, colors.orange, "#cbd5e1"] },
-    textinfo: "label+percent", textfont: { size: 11 },
-    hovertemplate: "%{label}<br>%{value:,.0f}人<br>%{percent}<extra></extra>"
-  }], baseLayout({ margin: { l: 10, r: 10, t: 10, b: 10 }, showlegend: false }), plotConfig);
+    x: segSorted.map(x => x.visitors), y: segSorted.map(x => x.segment),
+    type: "bar", orientation: "h",
+    marker: { color: segSorted.map((_, i) => [colors.blue, colors.blue2, colors.orange, "#cbd5e1"][i]) },
+    text: segSorted.map(x => formatNumber(x.visitors)), textposition: "outside",
+    hovertemplate: "%{y}<br>%{x:,.0f} 人<extra></extra>"
+  }], baseLayout({ showlegend: false, xaxis: { title: "访客数", gridcolor: colors.grid }, yaxis: { gridcolor: "transparent" }, margin: { l: 120, r: 60, t: 10, b: 30 } }), plotConfig);
 
   const detailTitle = document.querySelector("#detail-title");
   if (detailTitle) detailTitle.textContent = "品类表现明细（浏览量 ≥ 1,000）";
