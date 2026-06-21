@@ -24,8 +24,10 @@ function baseLayout(extra = {}) {
   };
 }
 
-function renderKpis(items) {
-  document.querySelector("#kpi-grid").innerHTML = items.map(item => `
+function renderKpis(selector, items) {
+  const grid = document.querySelector(selector);
+  if (!grid) return;
+  grid.innerHTML = items.map(item => `
     <article class="kpi">
       <span>${item.label}</span>
       <strong>${item.value}</strong>
@@ -78,16 +80,22 @@ function renderEcommerce(windowSize = "all") {
   const winEvents = winViews + winCarts + winTxns;
   const isFiltered = windowSize !== "all" || customStart || customEnd;
 
-  renderKpis([
+  // 窗口指标 — 随过滤条件变化
+  renderKpis("#kpi-grid-window", [
     { label: "行为事件", value: formatNumber(winEvents), note: isFiltered ? "窗口内浏览、加购和交易" : "浏览、加购和交易" },
     { label: "日均活跃访客", value: formatNumber(Math.round(winVisitors / Math.max(daily.length, 1))), note: isFiltered ? "窗口内日均去重访客" : "观察期日均去重访客" },
     { label: "日均交易访客", value: formatNumber(Math.round(winBuyers / Math.max(daily.length, 1))), note: isFiltered ? `窗口内访客交易率 ${formatPercent(winBuyers / Math.max(winVisitors, 1))}` : `观察期访客交易率 ${formatPercent(d.metrics.buyerRate)}` },
+    { label: "窗口内交易率", value: formatPercent(winBuyers / Math.max(winVisitors, 1)), note: isFiltered ? "窗口内交易访客 / 活跃访客" : "观察期交易访客 / 活跃访客" },
+    { label: "窗口天数", value: daily.length, note: isFiltered ? `已筛选：${daily[0]?.event_date || "—"} — ${daily.at(-1)?.event_date || "—"}` : "全量数据" },
+  ]);
+  // 全局指标 — 全量数据统计（不随窗口变化）
+  renderKpis("#kpi-grid-global", [
     { label: "浏览访客", value: formatNumber(d.metrics.visitors), note: "观察期去重访客" },
     { label: "交易访客", value: formatNumber(d.metrics.buyers), note: `交易率 ${formatPercent(d.metrics.buyerRate)}` },
     { label: "复购率", value: formatPercent(d.metrics.repeatRate), note: "交易 ≥ 2 次 / 全部交易访客" },
     { label: "加购未交易", value: formatNumber(d.metrics.highIntent), note: "优先召回候选人群" },
     { label: "后续交易 AUC", value: d.metrics.auc.toFixed(3), note: "首 7 天预测第 8—30 天" },
-    { label: "测试集 MAPE", value: `${d.metrics.forecastMape.toFixed(1)}%`, note: "末期出现结构变化" }
+    { label: "测试集 MASE", value: (d.metrics.forecastMase || (d.metrics.forecastMape / 51)).toFixed(1), note: `MAPE ${d.metrics.forecastMape.toFixed(1)}%（末期结构变化）` },
   ]);
 
   document.querySelector("#trend-title").textContent = "日活跃访客与交易访客";
