@@ -21,6 +21,14 @@
   </header>
 
   <main>
+    <div class="print-header">
+      <h1>Retailrocket 电商用户行为数据报表</h1>
+      <div class="print-meta">
+        <span>报告日期：<span id="pdf-date"></span></span>
+        <span>数据来源：Kaggle — Retailrocket Ecommerce Dataset</span>
+        <span id="pdf-range-info">日期范围：全部数据</span>
+      </div>
+    </div>
     <section class="project-head">
       <div>
         <p class="eyebrow">DATE RANGE</p>
@@ -76,7 +84,7 @@
       </article>
       <article class="panel">
         <div class="panel-head">
-          <div><h3>访客分层</h3></div>
+          <div><h3>访客分层（全量统计）</h3></div>
         </div>
         <div id="segment-chart" class="chart"></div>
       </article>
