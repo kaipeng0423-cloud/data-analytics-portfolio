@@ -69,9 +69,20 @@ function renderEcommerce(windowSize = "all") {
   document.querySelector("#project-kicker").textContent = "RETAILROCKET · USER BEHAVIOR";
   document.querySelector("#project-title").textContent = "电商用户行为与后续交易分析";
   document.querySelector("#project-summary").textContent = "以 275.6 万条浏览、加购和交易事件为基础，分析流量变化、高意向访客、品类表现和后续交易预测。";
+  // 基于过滤后窗口动态重算 KPI
+  const winVisitors = daily.reduce((s, x) => s + x.visitors, 0);
+  const winBuyers = daily.reduce((s, x) => s + x.buyers, 0);
+  const winViews = daily.reduce((s, x) => s + x.views, 0);
+  const winCarts = daily.reduce((s, x) => s + x.cart_events, 0);
+  const winTxns = daily.reduce((s, x) => s + x.transaction_events, 0);
+  const winEvents = winViews + winCarts + winTxns;
+  const isFiltered = windowSize !== "all" || customStart || customEnd;
+
   renderKpis([
-    { label: "行为事件", value: formatNumber(d.metrics.events), note: "浏览、加购和交易" },
-    { label: "访问访客", value: formatNumber(d.metrics.visitors), note: "观察期去重访客" },
+    { label: "行为事件", value: formatNumber(winEvents), note: isFiltered ? "窗口内浏览、加购和交易" : "浏览、加购和交易" },
+    { label: "日均活跃访客", value: formatNumber(Math.round(winVisitors / Math.max(daily.length, 1))), note: isFiltered ? "窗口内日均去重访客" : "观察期日均去重访客" },
+    { label: "日均交易访客", value: formatNumber(Math.round(winBuyers / Math.max(daily.length, 1))), note: isFiltered ? `窗口内访客交易率 ${formatPercent(winBuyers / Math.max(winVisitors, 1))}` : `观察期访客交易率 ${formatPercent(d.metrics.buyerRate)}` },
+    { label: "浏览访客", value: formatNumber(d.metrics.visitors), note: "观察期去重访客" },
     { label: "交易访客", value: formatNumber(d.metrics.buyers), note: `交易率 ${formatPercent(d.metrics.buyerRate)}` },
     { label: "复购率", value: formatPercent(d.metrics.repeatRate), note: "交易 ≥ 2 次 / 全部交易访客" },
     { label: "加购未交易", value: formatNumber(d.metrics.highIntent), note: "优先召回候选人群" },
