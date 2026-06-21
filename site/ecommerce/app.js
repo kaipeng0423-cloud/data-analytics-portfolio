@@ -90,7 +90,7 @@ function renderEcommerce(windowSize = "all") {
   } else {
     daily = sliceWindow(d.daily, "event_date", windowSize);
   }
-  document.querySelector("#project-kicker").textContent = "RETAILROCKET · ECOMMERCE DATA DASHBOARD";
+  const kicker = document.querySelector("#project-kicker"); if (kicker) kicker.textContent = "RETAILROCKET · ECOMMERCE DATA DASHBOARD";
 
   const winVisitors = daily.reduce((s, x) => s + x.visitors, 0);
   const winBuyers = daily.reduce((s, x) => s + x.buyers, 0);
@@ -139,8 +139,9 @@ function renderEcommerce(windowSize = "all") {
     textinfo: "label+percent", hovertemplate: "%{label}<br>%{value:,.0f}人<br>%{percent}<extra></extra>"
   }], baseLayout({ margin: { l: 16, r: 16, t: 16, b: 16 }, showlegend: false }), plotConfig);
 
-  document.querySelector("#detail-title").textContent = "品类表现明细（浏览量 ≥ 1,000）";
-  renderTable(d.category, [
+  const detailTitle = document.querySelector("#detail-title");
+  if (detailTitle) detailTitle.textContent = "品类表现明细（浏览量 ≥ 1,000）";
+  renderTable(d.category.slice(0, 30), [
     { key: "category_id", label: "品类 ID" },
     { key: "views", label: "浏览", format: formatNumber },
     { key: "cart_events", label: "加购", format: formatNumber },
