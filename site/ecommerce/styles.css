@@ -125,6 +125,19 @@ select, input {
 .header-links { display: flex; gap: 12px; align-items: flex-start; }
 .header-link { color: #c7d9e8; text-decoration: none; font-size: 12px; font-weight: 700; padding: 4px 0; border-bottom: 1px solid transparent; transition: border-color .2s; }
 .header-link:hover { border-bottom-color: #c7d9e8; }
+.btn-pdf {
+  background: var(--blue); color: white; border: none;
+  padding: 8px 16px; font-size: 12px; font-weight: 700; cursor: pointer;
+  border-radius: 2px; transition: background .2s;
+}
+.btn-pdf:hover { background: var(--navy); }
+@media print {
+  .topbar, .project-head, .filter-group, .range-controls, .header-links, footer, .btn-pdf { display: none !important; }
+  body { background: white; color: black; }
+  .panel { border: 1px solid #ccc; break-inside: avoid; }
+  .kpi { border: 1px solid #ccc; }
+  @page { margin: 1cm; size: A4 landscape; }
+}
 
 /* range controls */
 .range-controls { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
