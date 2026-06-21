@@ -79,25 +79,12 @@ function renderEcommerce(windowSize = "all") {
     { label: "测试集 MAPE", value: `${d.metrics.forecastMape.toFixed(1)}%`, note: "末期出现结构变化" }
   ]);
 
-  document.querySelector("#trend-title").textContent = "日活跃访客趋势与异常检测";
-  document.querySelector("#trend-note").textContent = "深色线为 STL 趋势分量，橙色点标记异常日（|Z| ≥ 2.5）";
-  const trendTraces = [
-    { x: daily.map(x => x.event_date), y: daily.map(x => x.visitors), type: "scatter", mode: "lines", name: "活跃访客", line: { color: colors.pale, width: 1.2 } },
-    { x: daily.map(x => x.event_date), y: daily.map(x => x.trend), type: "scatter", mode: "lines", name: "STL 趋势", line: { color: colors.blue, width: 2 } }
-  ];
-  if (d.hasOwnProperty("anomalies")) {
-    trendTraces.push({
-      x: d.anomalies.map(x => x.event_date), y: d.anomalies.map(x => x.visitors),
-      type: "scatter", mode: "markers", name: "异常日", marker: { color: colors.orange, size: 8, symbol: "circle-open" }
-    });
-  } else {
-    const anomalyDays = daily.filter(x => x.is_anomaly);
-    if (anomalyDays.length) trendTraces.push({
-      x: anomalyDays.map(x => x.event_date), y: anomalyDays.map(x => x.visitors),
-      type: "scatter", mode: "markers", name: "异常日", marker: { color: colors.orange, size: 8 }
-    });
-  }
-  Plotly.react("trend-chart", trendTraces, baseLayout({ yaxis: { title: "日活跃访客" } }), plotConfig);
+  document.querySelector("#trend-title").textContent = "日活跃访客与交易访客";
+  document.querySelector("#trend-note").textContent = "切换观察窗口可检查末期流量断点；过滤后自动重算访客交易率";
+  Plotly.react("trend-chart", [
+    { x: daily.map(x => x.event_date), y: daily.map(x => x.visitors), type: "scatter", mode: "lines", name: "活跃访客", line: { color: colors.blue, width: 2 } },
+    { x: daily.map(x => x.event_date), y: daily.map(x => x.buyers), type: "scatter", mode: "lines", name: "交易访客", yaxis: "y2", line: { color: colors.orange, width: 1.5 } }
+  ], baseLayout({ yaxis: { title: "活跃访客" }, yaxis2: { overlaying: "y", side: "right", title: "交易访客", gridcolor: "transparent" } }), plotConfig);
 
   document.querySelector("#structure-title").textContent = "行为触达访客与转化率";
   Plotly.react("structure-chart", [{
