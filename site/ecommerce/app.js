@@ -269,9 +269,13 @@ document.querySelectorAll(".tab").forEach(button => button.addEventListener("cli
 function applyDateRange() {
   const start = document.querySelector("#start-date").value;
   const end = document.querySelector("#end-date").value;
-  if (start && end && start > end) { alert("开始日期不能晚于结束日期"); return; }
-  customStart = start || null;
-  customEnd = end || null;
+  // 两个日期都填了才触发过滤，否则不做任何操作
+  if (!start || !end) return;
+  if (start > end) { alert("开始日期不能晚于结束日期"); return; }
+  customStart = start;
+  customEnd = end;
+  // 日期范围生效时重置下拉框
+  document.querySelector("#window-filter").value = "all";
   render(currentProject, "all");
 }
 document.querySelector("#window-filter").addEventListener("change", event => { customStart=null; customEnd=null; document.querySelector("#start-date").value=""; document.querySelector("#end-date").value=""; render(currentProject, event.target.value); });
