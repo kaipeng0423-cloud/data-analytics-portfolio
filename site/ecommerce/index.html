@@ -3,60 +3,64 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>彭凯 · 数据分析作品集</title>
+  <title>Retailrocket 电商用户行为数据看板</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="topbar">
     <div>
-      <p class="eyebrow">DATA ANALYTICS PORTFOLIO</p>
-      <h1>彭凯 · 数据分析作品集</h1>
-      <p class="intro">真实公开数据，从清洗、SQL 建模、统计分析到 Power BI / Web 可视化的完整交付。</p>
+      <p class="eyebrow">RETAILROCKET · ECOMMERCE USER BEHAVIOR</p>
+      <h1>电商用户行为数据看板</h1>
+      <p class="intro">基于 Retailrocket 275.6 万条真实行为事件，展示流量、行为触达、品类表现等核心数据。</p>
     </div>
-    <div class="status">
-      <span class="status-dot"></span>
-      <span>数据已完成一致性校验</span>
+    <div class="header-links">
+      <a href="./macro/" class="header-link">宏观看板</a>
+      <a href="../" class="header-link">作品集主页</a>
     </div>
   </header>
-
-  <nav class="project-tabs" aria-label="项目切换">
-    <button class="tab active" data-project="ecommerce">电商用户行为</button>
-    <button class="tab" data-project="retail">在线零售经营</button>
-  </nav>
 
   <main>
     <section class="project-head">
       <div>
-        <p id="project-kicker" class="eyebrow"></p>
-        <h2 id="project-title"></h2>
-        <p id="project-summary"></p>
-      </div>
-      <div class="filter-group">
-        <label for="window-filter">观察窗口</label>
-        <select id="window-filter"></select>
-        <label for="start-date">开始日期</label>
-        <input id="start-date" type="date">
-        <label for="end-date">结束日期</label>
-        <input id="end-date" type="date">
+        <p class="eyebrow">DATE RANGE</p>
+        <div class="range-controls">
+          <select id="window-filter">
+            <option value="all">全部日期</option>
+            <option value="60">最近 60 天</option>
+            <option value="30">最近 30 天</option>
+          </select>
+        </div>
+        <div class="range-controls" style="margin-top:6px">
+          <input type="range" id="range-slider" class="range-slider">
+          <span id="range-label" class="range-label"></span>
+        </div>
+        <div class="range-controls" style="margin-top:4px">
+          <span class="range-sep">自定义：</span>
+          <input id="start-date" type="date">
+          <span class="range-sep">—</span>
+          <input id="end-date" type="date">
+        </div>
       </div>
     </section>
 
-    <p style="margin:0 0 6px;color:var(--muted);font-size:12px;font-weight:700">📊 窗口指标（随过滤条件变化）</p>
-    <section id="kpi-grid-window" class="kpi-grid"></section>
-    <p style="margin:8px 0 6px;color:var(--muted);font-size:12px;font-weight:700">📋 全局指标（全量数据统计）</p>
-    <section id="kpi-grid-global" class="kpi-grid"></section>
+    <section class="kpi-section">
+      <h3 class="kpi-section-title">📊 窗口指标</h3>
+      <section id="kpi-grid-window" class="kpi-grid"></section>
+      <h3 class="kpi-section-title" style="margin-top:20px">📋 全局指标</h3>
+      <section id="kpi-grid-global" class="kpi-grid"></section>
+    </section>
 
     <section class="grid two">
       <article class="panel wide">
         <div class="panel-head">
-          <div><span class="panel-label">MOVEMENT</span><h3 id="trend-title"></h3></div>
-          <p id="trend-note"></p>
+          <div><h3>日活跃访客趋势</h3></div>
+          <p class="panel-note">拖动底部滑块或选择日期范围筛选</p>
         </div>
-        <div id="trend-chart" class="chart"></div>
+        <div id="trend-chart" class="chart chart-tall"></div>
       </article>
       <article class="panel">
         <div class="panel-head">
-          <div><span class="panel-label">STRUCTURE</span><h3 id="structure-title"></h3></div>
+          <div><h3>行为触达访客</h3></div>
         </div>
         <div id="structure-chart" class="chart"></div>
       </article>
@@ -65,64 +69,30 @@
     <section class="grid two">
       <article class="panel">
         <div class="panel-head">
-          <div><span class="panel-label">DRIVER</span><h3 id="driver-title"></h3></div>
+          <div><h3>分时事件分布</h3></div>
         </div>
-        <div id="driver-chart" class="chart"></div>
+        <div id="hourly-chart" class="chart"></div>
       </article>
       <article class="panel">
         <div class="panel-head">
-          <div><span class="panel-label">SEGMENT</span><h3 id="segment-title"></h3></div>
+          <div><h3>访客分层</h3></div>
         </div>
         <div id="segment-chart" class="chart"></div>
       </article>
     </section>
 
-    <section class="grid insight-grid">
-      <article class="panel insight">
-        <span class="panel-label">WHAT I FOUND</span>
-        <h3>核心发现</h3>
-        <ul id="findings"></ul>
-      </article>
-      <article class="panel insight">
-        <span class="panel-label">WHAT I WOULD DO</span>
-        <h3>业务动作</h3>
-        <ol id="actions"></ol>
-      </article>
-      <article class="panel insight method">
-        <span class="panel-label">HOW IT WORKS</span>
-        <h3>分析与工程方法</h3>
-        <div id="method-flow" class="method-flow"></div>
-      </article>
-    </section>
-
-    <section class="grid decision-grid">
-      <article class="panel causal-panel">
-        <span class="panel-label">CAUSAL-ADJACENT</span>
-        <h3>调整后的加购影响分析</h3>
-        <div id="causal-kpis" class="causal-kpis"></div>
-        <p id="causal-summary"></p>
-        <p id="balance-summary"></p>
-        <p id="causal-assumption" class="assumption"></p>
-      </article>
-      <article class="panel">
-        <span class="panel-label">DECISION</span>
-        <h3>决策规则与实验设计</h3>
-        <table id="decision-table" class="decision-table"></table>
-      </article>
-    </section>
-
     <section class="panel detail-panel">
       <div class="panel-head">
-        <div><span class="panel-label">DETAIL</span><h3 id="detail-title"></h3></div>
-        <input id="table-search" type="search" placeholder="搜索明细">
+        <div><h3>品类表现明细（浏览量 ≥ 1,000）</h3></div>
+        <input id="table-search" type="search" placeholder="搜索品类">
       </div>
       <div class="table-wrap"><table id="detail-table"></table></div>
     </section>
   </main>
 
   <footer>
-    <span>Python · SQL · SQLite · HiveSQL · Power BI · DAX · HTML/CSS/JavaScript · Plotly</span>
-    <span>指标均由真实数据查询生成</span>
+    <span>数据来源：Kaggle Retailrocket · Python · SQLite · Plotly</span>
+    <span>数据已完成一致性校验</span>
   </footer>
 
   <script src="plotly.min.js"></script>
