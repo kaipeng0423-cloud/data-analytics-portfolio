@@ -131,12 +131,25 @@ select, input {
   border-radius: 2px; transition: background .2s;
 }
 .btn-pdf:hover { background: var(--navy); }
+.print-header { display: none; }
 @media print {
-  .topbar, .project-head, .filter-group, .range-controls, .header-links, footer, .btn-pdf { display: none !important; }
-  body { background: white; color: black; }
-  .panel { border: 1px solid #ccc; break-inside: avoid; }
-  .kpi { border: 1px solid #ccc; }
-  @page { margin: 1cm; size: A4 landscape; }
+  body { background: white; color: #1e293b; font-size: 10px; }
+  .topbar, .project-head, .toolbar, .header-links, footer, .btn-pdf,
+  .kpi-section-title, .panel-note, .range-controls, select, input[type="date"], input[type="range"] { display: none !important; }
+  .print-header { display: block; padding: 0 0 12px; margin-bottom: 12px; border-bottom: 2px solid #2563eb; }
+  .print-header h1 { font-size: 20px; color: #1e40af; margin: 0 0 6px; }
+  .print-meta { display: flex; gap: 18px; font-size: 9px; color: #64748b; }
+  .kpi-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .kpi { padding: 8px; border: 1px solid #cbd5e1; }
+  .kpi strong { font-size: 16px; }
+  .panel { border: 1px solid #cbd5e1; padding: 10px; break-inside: avoid; margin-bottom: 8px; }
+  .grid { gap: 6px; margin-bottom: 8px; }
+  .chart { height: 280px; }
+  .chart-tall { height: 320px; }
+  .detail-panel { break-before: page; }
+  table { font-size: 9px; }
+  th { padding: 4px; } td { padding: 3px 4px; }
+  @page { margin: 0.8cm; size: A4 landscape; }
 }
 
 /* range controls */
