@@ -9,9 +9,12 @@
   --panel: #ffffff;
   --surface: #f4f6f8;
   --orange: #c97852;
+  --topbar-height: 100px;
 }
 
 * { box-sizing: border-box; }
+
+html { scroll-padding-top: var(--topbar-height); }
 
 body {
   margin: 0;
@@ -27,6 +30,9 @@ body {
   padding: 34px max(5vw, 32px) 26px;
   color: white;
   background: var(--navy);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .eyebrow, .panel-label {
@@ -136,6 +142,7 @@ select, input {
   body { background: white; color: #1e293b; font-size: 10px; }
   .topbar, .project-head, .toolbar, .header-links, footer, .btn-pdf,
   .kpi-section-title, .panel-note, .range-controls, select, input[type="date"], input[type="range"] { display: none !important; }
+  h1, h2, h3, h4, h5, h6 { scroll-margin-top: 0; }
   .print-header { display: block; padding: 0 0 12px; margin-bottom: 12px; border-bottom: 2px solid #2563eb; }
   .print-header h1 { font-size: 20px; color: #1e40af; margin: 0 0 6px; }
   .print-meta { display: flex; gap: 18px; font-size: 9px; color: #64748b; }
@@ -188,7 +195,7 @@ select, input {
 .detail-panel input { width: 220px; }
 .table-wrap { overflow: auto; max-height: 360px; margin-top: 14px; }
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
-th { position: sticky; top: 0; padding: 9px; color: white; background: var(--blue); text-align: right; }
+th { position: sticky; top: var(--topbar-height); padding: 9px; color: white; background: var(--blue); text-align: right; }
 td { padding: 8px 9px; border-bottom: 1px solid var(--line); text-align: right; }
 th:first-child, td:first-child { text-align: left; }
 tbody tr:hover { background: #f5f8fa; }
@@ -222,3 +229,5 @@ footer {
   h1 { font-size: 27px; overflow-wrap: anywhere; }
   .chart { height: 310px; }
 }
+
+.project-tabs{display:none}
