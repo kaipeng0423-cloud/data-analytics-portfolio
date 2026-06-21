@@ -150,7 +150,7 @@ function renderEcommerce(windowSize = "all") {
     marker: { color: [colors.blue, colors.blue2, colors.orange], line: { width: 0 } },
     text: d.funnel.map(x => formatNumber(x.visitors)), textposition: "outside",
     textfont: { size: 12, color: colors.ink }
-  }], baseLayout({ showlegend: false, yaxis: { title: "访客数", gridcolor: colors.grid, rangemode: "tozero" } }), plotConfig);
+  }], baseLayout({ showlegend: false, margin: { t: 60, r: 20 }, yaxis: { title: "访客数", gridcolor: colors.grid, rangemode: "nonnegative" } }), plotConfig);
 
   Plotly.react("hourly-chart", [
     { x: d.hourly.map(x => `${x.event_hour}:00`), y: d.hourly.map(x => x.views), type: "scatter", mode: "lines+markers", name: "浏览", line: { color: colors.blue, width: 1.8 }, marker: { size: 4 } },
@@ -165,7 +165,7 @@ function renderEcommerce(windowSize = "all") {
     marker: { color: segSorted.map((_, i) => [colors.blue, colors.blue2, colors.orange, "#cbd5e1"][i]) },
     text: segSorted.map(x => formatNumber(x.visitors)), textposition: "outside",
     hovertemplate: "%{y}<br>%{x:,.0f} 人<extra></extra>"
-  }], baseLayout({ showlegend: false, xaxis: { title: "访客数", gridcolor: colors.grid }, yaxis: { gridcolor: "transparent" }, margin: { l: 120, r: 60, t: 10, b: 30 } }), plotConfig);
+  }], baseLayout({ showlegend: false, xaxis: { title: "访客数", gridcolor: colors.grid }, yaxis: { gridcolor: "transparent" }, margin: { l: 130, r: 80, t: 10, b: 30 } }), plotConfig);
 
   const detailTitle = document.querySelector("#detail-title");
   if (detailTitle) detailTitle.textContent = "品类表现明细（浏览量 ≥ 1,000）";
