@@ -84,14 +84,38 @@ function freshness() {
 }
 
 function decisionCharts() {
-  const r = D.decisionAnalysis.regimes;
+  const d = windowFilter(D.daily, years);
+  // 按窗口内数据的 risk_regime 分组，计算各组平均 forward_return_20d
+  const groups = {};
+  d.forEach(x => {
+    const reg = x.risk_regime;
+    if (!groups[reg]) groups[reg] = { sum: 0, n: 0 };
+    if (x.forward_return_20d != null) { groups[reg].sum += x.forward_return_20d; groups[reg].n++; }
+  });
+  const order = ["低风险", "中性", "偏高", "高风险"];
+  const r = order.filter(k => groups[k]).map(k => ({
+    risk_regime: k,
+    avg_forward_return: groups[k].n > 0 ? groups[k].sum / groups[k].n : 0,
+    observations: groups[k].n
+  }));
   Plotly.react("regime-chart", [{
-    x: r.map(x => x.risk_regime), y: r.map(x => x.avg_forward_return),
+    x: r.map(x => `${x.risk_regime}（${x.observations}天）`), y: r.map(x => x.avg_forward_return),
     type: "bar", marker: { color: r.map(x => x.avg_forward_return >= 0 ? C.blue : C.orange) },
     text: r.map(x => pct(x.avg_forward_return)), textposition: "outside"
   }], layout({ showlegend: false, yaxis: { tickformat: ".1%", gridcolor: C.grid }, margin: { l: 58, r: 24, t: 24, b: 46 } }), config);
-  const e = D.decisionAnalysis.rateHikeEventStudy;
-  document.querySelector("#event-study").innerHTML = `<div class="event-kpis"><div><strong>${fmt(e.events, 0)}</strong><span>风险跃升事件</span></div><div><strong>${pct(e.avgForwardReturn20d)}</strong><span>平均后续20日收益</span></div><div><strong>${pct(e.negativeProbability)}</strong><span>后续收益为负概率</span></div></div>`;
+
+  // 风险跃升事件：窗口内 risk_change_1d >= 15 的天数
+  const events = d.filter((x, i) => i > 0 && x.risk_change_1d != null && x.risk_change_1d >= 15);
+  const eCount = events.length;
+  let avgFwd = 0, negProb = 0;
+  if (eCount > 0) {
+    const fwds = events.map(x => x.forward_return_20d).filter(x => x != null);
+    avgFwd = fwds.reduce((a, b) => a + b, 0) / fwds.length;
+    negProb = fwds.filter(x => x < 0).length / fwds.length;
+  }
+  const note = (customStart || customEnd) ? "筛选窗口" : `${years}年窗口`;
+  document.querySelector("#event-study").innerHTML = `<div class="event-kpis"><div><strong>${eCount}</strong><span>风险跃升（${note}）</span></div><div><strong>${pct(avgFwd)}</strong><span>平均后续20日收益</span></div><div><strong>${pct(negProb)}</strong><span>后续为负概率</span></div></div>`;
+  document.querySelector("#regime-title").textContent = "风险区间与后续市场表现（随窗口变化）";
 }
 
 function status() {
