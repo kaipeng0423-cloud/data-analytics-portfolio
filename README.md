@@ -25,7 +25,6 @@
 - Web 交互看板：下拉选择/滑块/自定义日期三控件联动，KPI/图表全部随窗口实时计算
 - 工程化交付：Power BI 星型模型、HiveSQL（ODS/DWD 分层）、Flask Web 服务、Dockerfile
 - **看板**：[https://kaipeng0423-cloud.github.io/data-analytics-portfolio/ecommerce/](https://kaipeng0423-cloud.github.io/data-analytics-portfolio/ecommerce/)
-- **复现指南**：[说明.md](https://github.com/kaipeng0423-cloud/电商用户行为分析/blob/main/说明.md)（只学过 C 语言也能看懂）
 
 ---
 
