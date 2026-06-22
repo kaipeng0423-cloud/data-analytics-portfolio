@@ -25,32 +25,19 @@ function windowFilter(rows, n) {
 
 function renderKpisWin() {
   const d = windowFilter(D.daily, years);
-  const last = d.at(-1);
-  const risk = last ? fmt(last.risk_score, 1) : "—";
-  const regime = last ? last.risk_regime : "—";
-  const vixVal = last ? fmt(last.vix, 1) : "—";
-  const spread = last ? fmt(last.yield_spread, 2) : "—";
-  const hySpread = last ? fmt(last.high_yield_spread, 2) : "—";
-  const sp500 = last ? fmt(last.sp500, 0) : "—";
+  const avg = arr => arr.reduce((s, v) => s + v, 0) / Math.max(arr.length, 1);
+  const avgRisk = avg(d.map(x => x.risk_score));
+  const avgVix = avg(d.map(x => x.vix));
+  const avgSpread = avg(d.map(x => x.yield_spread));
+  const avgHy = avg(d.map(x => x.high_yield_spread));
+  const avgSp = avg(d.map(x => x.sp500));
   document.querySelector("#kpis-window").innerHTML = [
-    ["窗口末综合风险", risk, regime],
-    ["窗口末 VIX", vixVal, "波动率指数"],
-    ["窗口末期限利差", `${spread}%`, "10Y — 2Y"],
-    ["窗口末高收益债利差", `${hySpread}%`, "信用风险压力"],
-    ["窗口末标普500", sp500, "指数点位"],
+    ["窗口均综合风险", fmt(avgRisk, 1), d.at(-1)?.risk_regime || "—"],
+    ["窗口均 VIX", fmt(avgVix, 1), "波动率指数"],
+    ["窗口均期限利差", `${fmt(avgSpread, 2)}%`, "10Y — 2Y"],
+    ["窗口均高收益债利差", `${fmt(avgHy, 2)}%`, "信用风险压力"],
+    ["窗口均标普500", fmt(avgSp, 0), "指数点位"],
     ["窗口天数", d.length, `${d[0]?.observation_date || "—"} — ${d.at(-1)?.observation_date || "—"}`],
-  ].map(x => `<article class="kpi"><span>${x[0]}</span><strong>${x[1]}</strong><small>${x[2]}</small></article>`).join("");
-}
-
-function renderKpisGlobal() {
-  const l = D.latest;
-  document.querySelector("#kpis-global").innerHTML = [
-    ["综合风险", fmt(l.riskScore, 1), l.riskRegime],
-    ["VIX", fmt(l.vix, 1), `20日变化 ${l.riskChange20d >= 0 ? "+" : ""}${fmt(l.riskChange20d)}`],
-    ["期限利差", `${fmt(l.yieldSpread, 2)}%`, l.yieldSpread < 0 ? "收益率曲线倒挂" : "收益率曲线为正"],
-    ["高收益债利差", `${fmt(l.highYieldSpread, 2)}%`, "信用风险压力"],
-    ["标普500", fmt(l.sp500, 0), `20日收益 ${pct(l.sp500Return20d)}`],
-    ["数据日期", l.date, "按官方发布节奏更新"],
   ].map(x => `<article class="kpi"><span>${x[0]}</span><strong>${x[1]}</strong><small>${x[2]}</small></article>`).join("");
 }
 
@@ -85,7 +72,6 @@ function freshness() {
 
 function decisionCharts() {
   const d = windowFilter(D.daily, years);
-  // 按窗口内数据的 risk_regime 分组，计算各组平均 forward_return_20d
   const groups = {};
   d.forEach(x => {
     const reg = x.risk_regime;
@@ -104,7 +90,6 @@ function decisionCharts() {
     text: r.map(x => pct(x.avg_forward_return)), textposition: "outside"
   }], layout({ showlegend: false, yaxis: { tickformat: ".1%", gridcolor: C.grid }, margin: { l: 58, r: 24, t: 24, b: 46 } }), config);
 
-  // 风险跃升事件：窗口内 risk_change_1d >= 15 的天数
   const events = d.filter((x, i) => i > 0 && x.risk_change_1d != null && x.risk_change_1d >= 15);
   const eCount = events.length;
   let avgFwd = 0, negProb = 0;
@@ -147,4 +132,4 @@ document.querySelector("#start-date").max = D.latest.date;
 document.querySelector("#end-date").min = D.daily[0].observation_date;
 document.querySelector("#end-date").max = D.latest.date;
 
-renderKpisWin(); renderKpisGlobal(); charts(); decisionCharts(); freshness(); status();
+renderKpisWin(); charts(); decisionCharts(); freshness(); status();
