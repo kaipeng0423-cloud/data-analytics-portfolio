@@ -98,10 +98,3 @@ data-analytics-portfolio/
 ├── scripts/                     # 自动化脚本
 ├── requirements.txt             # Python 依赖
 └── README.md                    # 本文件
-```
-
----
-
-## License
-
-MIT
