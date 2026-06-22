@@ -8,17 +8,54 @@
     *{box-sizing:border-box}body{margin:0;background:#f3f6f8;color:#263442;font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif}
     header{padding:64px max(6vw,28px);color:white;background:#17324d}header p{max-width:760px;color:#d5e0e7;line-height:1.7}h1{font-size:clamp(32px,5vw,54px);margin:0}
     main{width:min(1100px,90vw);margin:-30px auto 50px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
-    article{padding:28px;background:white;border:1px solid #dce3e8;border-top:4px solid #315d80}article span{color:#6385a0;font-size:11px;font-weight:700;letter-spacing:1.4px}
-    h2{color:#17324d;margin:8px 0 10px}article p{min-height:76px;color:#66747f;line-height:1.65}a{display:inline-block;padding:11px 16px;color:white;background:#315d80;text-decoration:none;font-weight:700}
-    ul{padding-left:20px;line-height:1.8;font-size:13px}footer{text-align:center;padding:20px;color:#6b7882;font-size:12px}
+    article{padding:28px;background:white;border:1px solid #dce3e8;border-top:4px solid #315d80}
+    article span{color:#6385a0;font-size:11px;font-weight:700;letter-spacing:1.4px}
+    h2{color:#17324d;margin:8px 0 10px}article p{min-height:76px;color:#66747f;line-height:1.65}
+    a{display:inline-block;padding:11px 16px;color:white;background:#315d80;text-decoration:none;font-weight:700}
+    ul{padding-left:20px;line-height:1.8;font-size:13px}
+    .badge{display:inline-block;padding:3px 10px;margin-right:6px;background:#eaf1f5;color:#315d80;font-size:11px;border-radius:3px}
+    footer{text-align:center;padding:20px;color:#6b7882;font-size:12px}
     @media(max-width:720px){main{grid-template-columns:1fr;margin-top:20px}article p{min-height:auto}}
   </style>
 </head>
 <body>
-<header><h1>彭凯 · 数据分析项目</h1><p>两个真实数据项目，覆盖官方数据自动抓取、数据治理、SQL/HiveSQL、统计分析、Power BI 与响应式 Web 看板。网站由云端任务自动刷新。</p></header>
+<header>
+  <h1>彭凯 · 数据分析项目</h1>
+  <p>两个真实数据项目，涵盖数据自动抓取与清洗、SQL/HiveSQL 建表、统计分析与机器学习、Power BI 看板和响应式 Web 看板。网站由云端服务自动刷新。</p>
+  <p style="margin-top:12px">
+    <span class="badge" style="background:rgba(255,255,255,.15);color:#d5e0e7">Python 3.12</span>
+    <span class="badge" style="background:rgba(255,255,255,.15);color:#d5e0e7">SQLite</span>
+    <span class="badge" style="background:rgba(255,255,255,.15);color:#d5e0e7">sklearn</span>
+    <span class="badge" style="background:rgba(255,255,255,.15);color:#d5e0e7">Flask</span>
+    <span class="badge" style="background:rgba(255,255,255,.15);color:#d5e0e7">Plotly.js</span>
+    <span class="badge" style="background:rgba(255,255,255,.15);color:#d5e0e7">GitHub Actions</span>
+  </p>
+</header>
 <main>
-  <article><span>DAILY LIVE DATA</span><h2>宏观经济与金融风险监控</h2><p>每日抓取 FRED 官方利率、市场、通胀和就业数据，计算综合风险指数并展示数据新鲜度。</p><ul><li>云端每日刷新</li><li>快捷与自定义日期区间</li><li>手机、电脑响应式适配</li></ul><a href="./macro/">打开宏观看板</a></article>
-  <article><span>VERSION-AWARE PIPELINE</span><h2>电商用户行为与转化平台</h2><p>基于 Retailrocket 275.6 万条真实事件，分析流量、行为触达、高意向访客、品类与后续交易预测。</p><ul><li>每日检查 Kaggle 源版本</li><li>版本变化才触发全量重建</li><li>日期筛选与明细搜索</li></ul><a href="./ecommerce/">打开电商看板</a></article>
+  <article>
+    <span>📊 宏观经济项目</span>
+    <h2>宏观经济与金融风险监控</h2>
+    <p>每日抓取 FRED 官方利率和就业数据，自动计算风险综合指数，并提供交互式数据看板。</p>
+    <ul>
+      <li>每日自动刷新</li>
+      <li>快捷与自定义日期范围联动</li>
+      <li>风险区间动态计算、跃升事件自动检测</li>
+      <li>手机/电脑/打印自适应</li>
+    </ul>
+    <a href="./macro/">打开宏观看板</a>
+  </article>
+  <article>
+    <span>🛒 电商项目</span>
+    <h2>电商用户行为与转化平台</h2>
+    <p>基于 Retailrocket 275.6 万条真实行为事件，分析流量、行为触达、品类表现与转化驱动。</p>
+    <ul>
+      <li>版本自动检测，按需重建全链路</li>
+      <li>下拉选择、滑块、自定义日期三控件联动</li>
+      <li>KPI 随窗口实时计算，图表等比缩放</li>
+      <li>品类搜索、表头固定、PDF 下载</li>
+    </ul>
+    <a href="./ecommerce/">打开电商看板</a>
+  </article>
 </main>
 <footer>Python · SQL · HiveSQL · Power BI · DAX · Flask · Plotly · GitHub Actions</footer>
 </body>
