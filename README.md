@@ -13,7 +13,6 @@
 - 每日抓取 FRED 官方利率（联邦基金利率、10年期国债、TIPS 盈亏平衡通胀率）和就业数据
 - 自动计算风险综合指数（利率倒挂、实际利率、失业率变化三个维度）
 - 交互式数据看板：快捷/自定义日期范围联动、风险区间动态计算、跃升事件检测
-- 响应式设计：手机/电脑/打印自适应
 - **看板**：[https://kaipeng0423-cloud.github.io/data-analytics-portfolio/macro/](https://kaipeng0423-cloud.github.io/data-analytics-portfolio/macro/)
 
 ## 项目二：电商用户行为与转化分析
