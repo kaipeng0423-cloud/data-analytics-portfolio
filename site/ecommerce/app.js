@@ -86,7 +86,6 @@ function setupSlider(rows, key) {
 }
 
 function updatePdfInfo() {
-  // Update print-visible date range info
   const el = document.querySelector("#pdf-range-info");
   if (!el) return;
   const s = document.querySelector("#start-date").value;
@@ -144,7 +143,6 @@ function renderEcommerce(windowSize = "all") {
     { x: daily.map(x => x.event_date), y: daily.map(x => x.buyers), type: "scatter", mode: "lines", name: "交易访客", yaxis: "y2", line: { color: colors.orange, width: 1.8 }, fill: "tozeroy", fillcolor: "rgba(245,158,11,.08)" }
   ], baseLayout({ yaxis: { title: "活跃访客" }, yaxis2: { overlaying: "y", side: "right", title: "交易访客", gridcolor: "transparent" } }), plotConfig);
 
-  // 行为触达：动态计算窗口内日均值
   const avgViews = Math.round(winViews / Math.max(winDays, 1));
   const avgBuyers = Math.round(winBuyers / Math.max(winDays, 1));
   const avgCarts = Math.round(winCarts / Math.max(winDays, 1));
@@ -155,16 +153,14 @@ function renderEcommerce(windowSize = "all") {
     textfont: { size: 12, color: colors.ink }
   }], baseLayout({ showlegend: false, margin: { t: 70, r: 20 }, yaxis: { title: "窗口日均事件/访客数", gridcolor: colors.grid, rangemode: "nonnegative", range: [0, Math.max(avgViews, avgCarts, avgBuyers) * 1.3] } }), plotConfig);
 
-  // 分时事件：按窗口事件总数等比缩放，随窗口联动
   const totalFullEvents = d.metrics.events;
   const hourlyScale = isFiltered ? winEvents / totalFullEvents : 1;
   const scaleHourly = arr => arr.map(v => Math.round(v * hourlyScale));
   Plotly.react("hourly-chart", [
     { x: d.hourly.map(x => `${x.event_hour}:00`), y: scaleHourly(d.hourly.map(x => x.views)), type: "scatter", mode: "lines+markers", name: "浏览", line: { color: colors.blue, width: 1.8 }, marker: { size: 4 } },
     { x: d.hourly.map(x => `${x.event_hour}:00`), y: scaleHourly(d.hourly.map(x => x.transaction_events)), type: "scatter", mode: "lines+markers", name: "交易", yaxis: "y2", line: { color: colors.orange, width: 1.8 }, marker: { size: 4 } }
-  ], baseLayout({ xaxis: { title: "小时", dtick: 3 }, yaxis: { title: isFiltered ? "窗口缩放事件数" : "" }, yaxis2: { overlaying: "y", side: "right", gridcolor: "transparent" } }), plotConfig);
+  ], baseLayout({ xaxis: { title: "小时（UTC）", dtick: 3 }, yaxis: { title: isFiltered ? "窗口缩放事件数" : "" }, yaxis2: { overlaying: "y", side: "right", gridcolor: "transparent" } }), plotConfig);
 
-  // 访客分层：按窗口访客占比等比缩放，随窗口联动
   const segScale = isFiltered ? winVisitors / d.metrics.visitors : 1;
   const segScaled = d.segments.map(s => ({ segment: s.segment, visitors: Math.round(s.visitors * segScale) }));
   const segSorted = [...segScaled].sort((a, b) => a.visitors - b.visitors);
@@ -177,11 +173,10 @@ function renderEcommerce(windowSize = "all") {
     hovertemplate: "%{y}<br>%{x:,.0f} 人<extra></extra>"
   }], baseLayout({ showlegend: false, xaxis: { title: "访客数", gridcolor: colors.grid, range: [0, Math.max(...segSorted.map(s => s.visitors)) * 1.2] }, yaxis: { gridcolor: "transparent" }, margin: { l: 130, r: 100, t: 10, b: 30 } }), plotConfig);
 
-  // 动态更新图表标题，反映筛选状态
   const hourlyTitle = document.querySelector("#hourly-title");
-  if (hourlyTitle) hourlyTitle.textContent = isFiltered ? "分时事件分布（窗口缩放）" : "分时事件分布";
+  if (hourlyTitle) hourlyTitle.textContent = "分时事件分布";
   const segTitle = document.querySelector("#segment-title");
-  if (segTitle) segTitle.textContent = isFiltered ? "访客分层（窗口缩放）" : "访客分层（全量统计）";
+  if (segTitle) segTitle.textContent = "访客分层";
   const detailTitle = document.querySelector("#detail-title");
   if (detailTitle) detailTitle.textContent = "品类表现明细（浏览量 ≥ 1,000）";
   renderTable(d.category.slice(0, 30), [
