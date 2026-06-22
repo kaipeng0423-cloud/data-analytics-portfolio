@@ -108,6 +108,8 @@ function status() {
   b.textContent = r.status === "success" ? "最近刷新成功" : r.status === "partial" ? "部分序列刷新成功" : "刷新状态异常";
   b.className = "badge " + r.status;
   document.querySelector("#latest-date").textContent = `最近一次任务：${r.finishedAt || "—"} · 写入/复核 ${fmt(r.rowsUpserted, 0)} 行`;
+  const pdfEl = document.querySelector("#pdf-date");
+  if (pdfEl) pdfEl.textContent = new Date().toISOString().slice(0, 10);
 }
 
 function applyCustomDates() {

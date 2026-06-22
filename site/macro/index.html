@@ -14,12 +14,20 @@
       <p>FRED 官方数据每日增量抓取，展示利率、市场、通胀、就业等核心指标。</p>
     </div>
     <div class="header-links">
+      <button onclick="window.print()" class="btn-pdf">下载 PDF 报表</button>
       <a href="../ecommerce/" class="header-link">电商看板</a>
       <a href="../" class="header-link">作品集主页</a>
     </div>
   </header>
 
   <main>
+    <div class="print-header">
+      <h1>宏观经济与金融风险数据报表</h1>
+      <div class="print-meta">
+        <span>报告日期：<span id="pdf-date"></span></span>
+        <span>数据来源：FRED（Federal Reserve Economic Data）</span>
+      </div>
+    </div>
     <section class="toolbar">
       <div class="toolbar-left">
         <span id="refresh-status" class="badge"></span>
