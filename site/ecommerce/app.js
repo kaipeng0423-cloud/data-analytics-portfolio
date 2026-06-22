@@ -131,12 +131,12 @@ function renderEcommerce(windowSize = "all") {
     { label: "日均浏览量", value: formatNumber(Math.round(winViews / Math.max(winDays, 1))), note: `日均加购 ${formatNumber(Math.round(winCarts / Math.max(winDays, 1)))}` },
   ]);
   renderKpis("#kpi-grid-global", [
-    { label: "浏览访客", value: formatNumber(d.metrics.visitors), note: "观察期去重" },
-    { label: "交易访客", value: formatNumber(d.metrics.buyers), note: `访客交易率 ${formatPercent(d.metrics.buyerRate)}` },
-    { label: "复购率", value: formatPercent(d.metrics.repeatRate), note: "交易 ≥ 2 次占比" },
-    { label: "加购未交易", value: formatNumber(d.metrics.highIntent), note: "优先召回候选" },
-    { label: "AUC", value: d.metrics.auc.toFixed(3), note: "后续交易预测模型" },
-    { label: "MASE", value: (d.metrics.forecastMase || 2.1).toFixed(1), note: `MAPE ${d.metrics.forecastMape.toFixed(0)}%` },
+    { label: "浏览访客", value: formatNumber(d.metrics.visitors), note: "全量去重 · 不随窗口变化" },
+    { label: "交易访客", value: formatNumber(d.metrics.buyers), note: `全量交易率 ${formatPercent(d.metrics.buyerRate)}` },
+    { label: "复购率", value: formatPercent(d.metrics.repeatRate), note: "全量 · 交易 ≥ 2 次占比" },
+    { label: "加购未交易", value: formatNumber(d.metrics.highIntent), note: "全量 · 优先召回候选" },
+    { label: "AUC", value: d.metrics.auc.toFixed(3), note: "全量 · 后续交易预测模型" },
+    { label: "MASE", value: (d.metrics.forecastMase || 2.1).toFixed(1), note: `全量 · MAPE ${d.metrics.forecastMape.toFixed(0)}%` },
   ]);
 
   Plotly.react("trend-chart", [
@@ -155,10 +155,13 @@ function renderEcommerce(windowSize = "all") {
     textfont: { size: 12, color: colors.ink }
   }], baseLayout({ showlegend: false, margin: { t: 60, r: 20 }, yaxis: { title: "窗口日均事件/访客数", gridcolor: colors.grid, rangemode: "nonnegative" } }), plotConfig);
 
+  // 分时事件：按窗口天数等比缩放，使图表随窗口联动
+  const hourlyScale = isFiltered ? winDays / d.daily.length : 1;
+  const scaleHourly = arr => arr.map(v => Math.round(v * hourlyScale));
   Plotly.react("hourly-chart", [
-    { x: d.hourly.map(x => `${x.event_hour}:00`), y: d.hourly.map(x => x.views), type: "scatter", mode: "lines+markers", name: "浏览", line: { color: colors.blue, width: 1.8 }, marker: { size: 4 } },
-    { x: d.hourly.map(x => `${x.event_hour}:00`), y: d.hourly.map(x => x.transaction_events), type: "scatter", mode: "lines+markers", name: "交易", yaxis: "y2", line: { color: colors.orange, width: 1.8 }, marker: { size: 4 } }
-  ], baseLayout({ xaxis: { title: "小时", dtick: 3 }, yaxis2: { overlaying: "y", side: "right", gridcolor: "transparent" } }), plotConfig);
+    { x: d.hourly.map(x => `${x.event_hour}:00`), y: scaleHourly(d.hourly.map(x => x.views)), type: "scatter", mode: "lines+markers", name: "浏览", line: { color: colors.blue, width: 1.8 }, marker: { size: 4 } },
+    { x: d.hourly.map(x => `${x.event_hour}:00`), y: scaleHourly(d.hourly.map(x => x.transaction_events)), type: "scatter", mode: "lines+markers", name: "交易", yaxis: "y2", line: { color: colors.orange, width: 1.8 }, marker: { size: 4 } }
+  ], baseLayout({ xaxis: { title: "小时", dtick: 3 }, yaxis: { title: isFiltered ? "窗口缩放事件数" : "" }, yaxis2: { overlaying: "y", side: "right", gridcolor: "transparent" } }), plotConfig);
 
   // 柱状图：避免饼图因极端分布导致标签截断
   const segSorted = [...d.segments].sort((a, b) => a.visitors - b.visitors);
@@ -170,6 +173,11 @@ function renderEcommerce(windowSize = "all") {
     hovertemplate: "%{y}<br>%{x:,.0f} 人<extra></extra>"
   }], baseLayout({ showlegend: false, xaxis: { title: "访客数", gridcolor: colors.grid }, yaxis: { gridcolor: "transparent" }, margin: { l: 130, r: 80, t: 10, b: 30 } }), plotConfig);
 
+  // 动态更新图表标题，反映筛选状态
+  const hourlyTitle = document.querySelector("#hourly-title");
+  if (hourlyTitle) hourlyTitle.textContent = isFiltered ? "分时事件分布（窗口缩放）" : "分时事件分布";
+  const segTitle = document.querySelector("#segment-title");
+  if (segTitle) segTitle.textContent = "访客分层（全量统计）";
   const detailTitle = document.querySelector("#detail-title");
   if (detailTitle) detailTitle.textContent = "品类表现明细（浏览量 ≥ 1,000）";
   renderTable(d.category.slice(0, 30), [
